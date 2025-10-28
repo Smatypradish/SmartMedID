@@ -28,8 +28,8 @@ SmartMedID is a privacy-focused healthcare solution built using Python. It enabl
 
 See `SmartMedID_Report.md` for the full academic report.
 
-## Authors
+## Author
 
-- Mano.K, Dhayanidhi J P, Pradish G  
+- Pradish G  
   School of Computer Science Engineering and Information Systems,  
   Vellore Institute of Technology, Vellore, Tamilnadu, India
