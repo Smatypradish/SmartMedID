@@ -1,0 +1,28 @@
+-- 1. Doctors Table (Stores credentials and face encodings)
+CREATE TABLE Doctors (
+    doctor_id VARCHAR(50) PRIMARY KEY,
+    password_hash CHAR(64) NOT NULL, -- SHA-256 hash for security
+    email VARCHAR(100) UNIQUE NOT NULL, -- Used for doctor OTP/MFA
+    -- Biometric data: Stored as a byte array (BLOB)
+    face_encoding BYTEA
+);
+
+-- 2. Patients Table (Stores encrypted records and face encodings)
+CREATE TABLE Patients (
+    patient_id VARCHAR(50) PRIMARY KEY,
+    -- Encrypted record (using Fernet)
+    encrypted_record BYTEA NOT NULL,
+    email VARCHAR(100) UNIQUE, -- Used for patient OTP
+    -- Biometric data: Stored as a byte array (BLOB)
+    face_encoding BYTEA
+);
+
+-- 3. Access Logs Table (Stores audit trail)
+CREATE TABLE AccessLogs (
+    log_id SERIAL PRIMARY KEY,
+    time TIMESTAMP NOT NULL,
+    doctor_id VARCHAR(50) REFERENCES Doctors(doctor_id), -- Foreign key to Doctors
+    patient_id VARCHAR(50),
+    status VARCHAR(10) NOT NULL, -- e.g., 'SUCCESS', 'FAIL'
+    reason VARCHAR(255)
+);
