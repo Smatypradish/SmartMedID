@@ -1,0 +1,9 @@
+tk
+Pillow
+opencv-python
+face_recognition
+speechrecognition
+psycopg2
+cryptography
+pandas
+scikit-learn
