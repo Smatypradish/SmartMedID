@@ -22,13 +22,14 @@ except ImportError:
 
 def check_for_anomalies():
     """Identifies anomalous failed login patterns."""
-    if IsolationForest is None:
-        return "ML libraries not installed for Anomaly Detection."
+    if IsolationForest is None or pd is None:
+        return "ML libraries (pandas, sklearn) not installed for Anomaly Detection."
     conn = get_db_connection()
     if conn is None:
         return "Database connection failed for anomaly detection."
     log_query = "SELECT time, doctor_id, reason FROM AccessLogs WHERE status = 'FAIL' and reason != 'Invalid password';"
     try:
+        # Use pandas to load data from the database connection
         df = pd.read_sql(log_query, conn)
     except Exception as e:
         return f"Error loading log data: {e}"
@@ -36,6 +37,7 @@ def check_for_anomalies():
         conn.close()
     if df.empty or len(df) < 20: 
         return "Insufficient failed login data for anomaly detection (min 20 needed)."
+    df['time'] = pd.to_datetime(df['time']) # Ensure 'time' is datetime type
     df['hour'] = df['time'].dt.hour
     df['dayofweek'] = df['time'].dt.dayofweek
     df['doctor_id_encoded'] = df['doctor_id'].astype('category').cat.codes
@@ -77,7 +79,7 @@ def enroll_doctor_db(doc_id, password, email, face_encoding_np):
     if conn is None:
         return False, "Database connection failed."
     hashed_pw = hash_password(password)
-    face_binary = face_to_binary(face_encoding_np)
+    face_binary = face_to_binary(face_encoding_np) # Will be None if passed None
 
     insert_query = """
     INSERT INTO Doctors (doctor_id, password_hash, email, face_encoding)
@@ -173,6 +175,7 @@ def decrypt_patient_record(encrypted_record):
         return None, "Encryption Key unavailable."
     try:
         if not isinstance(encrypted_record, bytes):
+            # Attempt a conversion if it comes as a buffer or memoryview
             encrypted_record = bytes(encrypted_record)
     except Exception as e:
         return None, f"Decryption failed: Token is invalid type ({type(encrypted_record)})"
